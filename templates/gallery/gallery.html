@@ -6,7 +6,8 @@
 <div class="card" x-data="{ open: false, src: '', trigger: null, close() { this.open = false; this.trigger?.focus(); } }">
     
     <form hx-post="{% url 'gallery:gallery' trip.code %}" hx-target="#photo-grid" hx-swap="innerHTML"
-          hx-encoding="multipart/form-data" class="inline-form">
+          hx-encoding="multipart/form-data" class="inline-form photo-form"
+          hx-disabled-elt="find button[type='submit']" hx-on::after-request="this.reset()">
         {% csrf_token %}
         <div class="field">
             <label for="image">Add a photo</label>
@@ -16,7 +17,10 @@
             <label for="caption">Caption</label>
             <input type="text" id="caption" name="caption" placeholder="Optional">
         </div>
-        <button class="btn btn-primary" type="submit">Add photo</button>
+        <button class="btn btn-primary" type="submit">
+            <span class="btn-label">Add photo</span>
+            <span class="btn-label-busy">Uploading your photo…</span>
+        </button>
     </form>
 
     <div id="photo-grid">
