@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Photos · {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-heading"><span class="eyebrow">{{ trip.name }}</span><h1>Photos</h1><p class="muted">The evidence.</p></div>
+<div class="card" x-data="{ open: false, src: '', trigger: null, close() { this.open = false; this.trigger?.focus(); } }">
+    
+    <form hx-post="{% url 'gallery:gallery' trip.code %}" hx-target="#photo-grid" hx-swap="innerHTML"
+          hx-encoding="multipart/form-data" class="inline-form">
+        {% csrf_token %}
+        <div class="field">
+            <label for="image">Add a photo</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+        <div class="field">
+            <label for="caption">Caption</label>
+            <input type="text" id="caption" name="caption" placeholder="Optional">
+        </div>
+        <button class="btn btn-primary" type="submit">Add photo</button>
+    </form>
+
+    <div id="photo-grid">
+        {% include 'gallery/partials/grid.html' %}
+    </div>
+
+    <template x-if="open">
+        <div class="lightbox" role="dialog" aria-modal="true" aria-label="Photo preview" @keydown.escape.window="close()" @keydown.tab.prevent="$refs.closePhoto.focus()" @click="close()">
+            <button class="lightbox-close" x-ref="closePhoto" aria-label="Close photo" type="button" @click="close()">&times;</button>
+            <img :src="src" alt="">
+        </div>
+    </template>
+</div>
+{% endblock %}

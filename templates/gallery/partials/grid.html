@@ -1,0 +1,18 @@
+{% if photos %}
+<div class="photo-grid">
+    {% for photo in photos %}
+    <figure>
+        <button class="photo-open" type="button" aria-label="View {{ photo.caption|default:'photo' }}"
+                @click="trigger = $el; open = true; src = $el.querySelector('img').src; $nextTick(() => $refs.closePhoto.focus())">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Game photo' }}" loading="lazy">
+        </button>
+        <figcaption>
+            {% if photo.caption %}{{ photo.caption }}{% endif %}
+            <div class="small muted">{{ photo.uploaded_by.name|default:"—" }} · {{ photo.created_at|date:"D H:i" }}</div>
+        </figcaption>
+    </figure>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty">No photos yet. Be the first.</p>
+{% endif %}
