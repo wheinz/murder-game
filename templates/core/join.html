@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Join {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="card entry-card join-card"><span class="eyebrow">YOU’RE INVITED</span>
+    <h1>Join “{{ trip.name }}”</h1>
+    {% if trip.date_range_display %}<p class="muted">{{ trip.date_range_display }}</p>{% endif %}
+
+    <form method="post" class="stack" autocomplete="off">
+        {% csrf_token %}
+        <div class="field">
+            <label for="name">Pick a nickname</label>
+            <input type="text" id="name" name="name" maxlength="80" required
+                   placeholder="Your nickname">
+        </div>
+        <button class="btn btn-primary" type="submit">Enter the game</button>
+    </form>
+    <p class="small muted" style="margin-top:16px">Pick a nickname no one else in this game is using.</p>
+    <p class="small muted" style="margin-top:8px">New here? <a href="{% url 'game:rules' trip.code %}">Read the rules</a>.</p>
+</div>
+{% endblock %}

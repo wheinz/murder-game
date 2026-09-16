@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Murder Game{% endblock %}
+
+{% block content %}
+<div class="welcome-intro"><span class="eyebrow">GOOD FRIENDS. QUESTIONABLE ALIBIS.</span><h1>Killer weekend.<br><em>Lovely company.</em></h1><p class="muted">One code gets you in: your secret contract, the kill feed,<br>and the photos. Last one standing wins.</p></div>
+<div class="card entry-card">
+    <span class="eyebrow">ACCESS BY INVITATION</span><h2>Got your invite?</h2>
+    <p class="muted">Enter the 6-digit code for your game.</p>
+
+    <form method="post" class="stack">
+        {% csrf_token %}
+        <div class="field">
+            <label for="code">Entry code</label>
+            <input type="text" id="code" name="code" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="6" autocomplete="off" placeholder="000000" required
+                   style="font-size:1.6rem;letter-spacing:0.4em;text-align:center">
+        </div>
+        <button class="btn btn-primary" type="submit">Enter the game <span aria-hidden="true">↗</span></button>
+    </form>
+
+    <p class="small muted" style="margin-top:16px">Ask the organiser for the code.</p>
+</div>
+{% endblock %}

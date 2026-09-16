@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#101210">
+    <title>{% block title %}Murder Game{% endblock %}</title>
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<body class="{% if current_player %}signed-in{% else %}welcome{% endif %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="{% if current_player %}{% url 'game:game' current_player.trip.code %}{% else %}{% url 'core:home' %}{% endif %}">
+            <span class="brand-mark" aria-hidden="true">✦</span> Murder<span class="brand-game">Game</span>
+        </a>
+        {% if current_player %}
+        <nav class="nav" aria-label="Main navigation">
+            <a href="{% url 'game:game' current_player.trip.code %}" {% if request.resolver_match.app_name == 'game' %}aria-current="page"{% endif %}>{% include "icon.html" with name="game" %}<span>Game</span></a>
+            <a href="{% url 'feed:feed' current_player.trip.code %}" {% if request.resolver_match.app_name == 'feed' %}aria-current="page"{% endif %}>{% include "icon.html" with name="feed" %}<span>Feed</span></a>
+            <a href="{% url 'gallery:gallery' current_player.trip.code %}" {% if request.resolver_match.app_name == 'gallery' %}aria-current="page"{% endif %}>{% include "icon.html" with name="photos" %}<span>Photos</span></a>
+        </nav>
+        <div class="whoami">
+            <span class="avatar" aria-hidden="true">{{ current_player.name|first|upper }}</span><span class="player-name" title="You are">{{ current_player.name }}{% if current_player.is_alive and current_player.trip.game_status == 'active' %} 🟢{% elif current_player.trip.game_status == 'active' %} 💀{% endif %}</span>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<main id="main-content" class="container">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="message {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <span>Made for good company. And a little friendly betrayal.</span>
+    </div>
+</footer>
+</body>
+</html>
