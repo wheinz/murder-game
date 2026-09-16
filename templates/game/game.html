@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Game · {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-heading"><span class="eyebrow">{{ trip.name }}</span><h1>The Hunt</h1><p class="muted">{% if trip.date_range_display %}{{ trip.date_range_display }} · {% endif %}Trust your friends. Just not too much.</p></div>
+<div class="row between">
+    <span class="badge {{ trip.game_status }}">{{ trip.get_game_status_display }}</span>
+    <a class="btn btn-small" href="{% url 'game:rules' trip.code %}">How to play</a>
+</div>
+
+{% include 'game/partials/kill_modal.html' %}
+
+{% if trip.game_status == 'setup' %}
+<div class="card">
+    <h2>Get ready</h2>
+    <p class="muted">
+        {{ total_count }} players · {{ trip.weapons.count }} weapons · {{ trip.locations.count }} locations.
+        You need at least 3 players and at least one weapon and one location per player. The organiser starts the hunt.
+    </p>
+    <div class="row">
+        <a class="btn" href="{% url 'game:pool' trip.code %}">Weapons and locations</a>
+    </div>
+    <div class="invite-box"><label for="invite-link">Bring the whole crew</label>
+    <input id="invite-link" aria-label="Game invite link" type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{% url 'game:game' trip.code %}" onclick="this.select()">
+    <p class="small muted" style="margin-top:8px">Entry code: <strong>{{ trip.code }}</strong></p></div>
+</div>
+<div class="card">
+    <h2>Players ({{ total_count }})</h2>
+    {% if alive_players %}
+    <ul class="plain">
+        {% for p in alive_players %}
+        <li><span>{{ p.name }}{% if p.pk == player.pk %} <span class="tag">you</span>{% endif %}</span></li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No players yet.</p>{% endif %}
+</div>
+{% endif %}
+
+{% if trip.game_status == 'active' %}
+{% if player.is_alive and waiting_on %}
+<div class="card kill-registered">
+    <span class="eyebrow">RECORDED</span>
+    <h2>Kill attempt registered</h2>
+    {% for attempt in waiting_on %}
+    <div class="row between">
+        <span>
+            You reported <strong>{{ attempt.victim.name }}</strong> — <em>{{ attempt.weapon_text }}</em> at <em>{{ attempt.location_text }}</em>. Waiting for them to confirm.
+        </span>
+        <span class="tag">pending</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if player.is_alive and must_resolve %}
+<div class="card"><p class="muted">Settle the kill above before you keep hunting.</p></div>
+{% elif player.is_alive and assignment %}
+<div class="card contract">
+    <h2>Your contract</h2>
+    <p><span class="muted">Target</span><br><span class="weapon">{{ assignment.target.name }}</span></p>
+    <p><span class="muted">Weapon</span><br><span class="weapon">{{ assignment.weapon_text }}</span></p>
+    <p><span class="muted">Location</span><br><span class="place">{{ assignment.location_text }}</span></p>
+    {% include 'game/partials/contract_actions.html' %}
+</div>
+{% elif player.is_alive %}
+<div class="card"><p class="muted">Your contract isn't ready yet. Check back in a moment.</p></div>
+{% else %}
+<div class="card eliminated">
+    <span class="eyebrow">ELIMINATED</span>
+    <h2>You're out</h2>
+    {% if killed_by %}
+    <p class="muted">Taken down by <strong>{{ killed_by.killer.name }}</strong> with <em>{{ killed_by.weapon_text }}</em> at <em>{{ killed_by.location_text }}</em> · {{ killed_by.confirmed_at|date:"D H:i" }}.</p>
+    {% else %}
+    <p class="muted">You're no longer in the hunt.</p>
+    {% endif %}
+    <p class="muted small">{{ alive_count }} still standing. Sit back and enjoy the chaos.</p>
+</div>
+{% endif %}
+
+<div class="grid two">
+    <div class="card">
+        <h2>Still standing ({{ alive_count }})</h2>
+        <ul class="plain">
+            {% for p in alive_players %}
+            <li>
+                <span>{{ p.name }}{% if p.pk == player.pk %} <span class="tag">you</span>{% endif %}</span>
+                <span class="badge alive">alive</span>
+            </li>
+            {% empty %}
+            <li><span class="empty">No one left.</span></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card">
+        <h2>Out ({{ out_players|length }})</h2>
+        {% if out_players %}
+        <ul class="plain">
+            {% for p, kill in out_players %}
+            <li>
+                <span>{{ p.name }}{% if p.pk == player.pk %} <span class="tag">you</span>{% endif %}
+                    {% if kill %}<div class="small muted">killed by {{ kill.killer.name }}</div>{% endif %}
+                </span>
+                <span class="badge dead">out</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="empty">No one's been taken out yet.</p>{% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if trip.game_status == 'finished' %}
+<div class="card game-over">
+    <span class="eyebrow">GAME OVER</span>
+    {% if winner %}<h2>🏆 {{ winner.name }} wins</h2>{% else %}<h2>The hunt is over</h2>{% endif %}
+    {% if winner and player.pk == winner.pk %}
+    <p class="muted">You won the hunt. Well played.</p>
+    {% elif killed_by %}
+    <p class="muted">You were eliminated by <strong>{{ killed_by.killer.name }}</strong> with <em>{{ killed_by.weapon_text }}</em> at <em>{{ killed_by.location_text }}</em>.</p>
+    {% else %}
+    <p class="muted">Last one standing takes it all.</p>
+    {% endif %}
+</div>
+<div class="card">
+    <h2>Final standings</h2>
+    <ul class="plain standings">
+        {% for p, kill in standings %}
+        <li>
+            <span><span class="rank">{{ forloop.counter }}</span> {{ p.name }}{% if p.pk == player.pk %} <span class="tag">you</span>{% endif %}
+                {% if kill %}<div class="small muted">eliminated by {{ kill.killer.name }}</div>{% endif %}
+            </span>
+            {% if winner and forloop.first %}<span class="badge finished">winner</span>{% else %}<span class="badge dead">out</span>{% endif %}
+        </li>
+        {% empty %}
+        <li><span class="empty">No standings yet.</span></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if trip.game_status != 'setup' %}
+<div class="card">
+    <h2>Your kills{% if my_kill_count %} ({{ my_kill_count }}){% endif %}</h2>
+    {% if my_kills %}
+    <ul class="plain">
+        {% for kill in my_kills %}
+        <li>
+            <span><strong>{{ kill.victim.name }}</strong><div class="small muted">with {{ kill.weapon_text }} at {{ kill.location_text }}</div></span>
+            <span class="tag">{{ kill.confirmed_at|date:"D H:i" }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No kills yet.</p>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

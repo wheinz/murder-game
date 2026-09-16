@@ -1,0 +1,23 @@
+{% if error %}<p class="message error">{{ error }}</p>{% endif %}
+<div class="grid two">
+    <div class="card">
+        <h2>🔪 Weapons ({{ weapons|length }})</h2>
+        {% if weapons %}
+        <ul class="plain">
+            {% for w in weapons %}
+            <li><span>{{ w.text }}</span><span class="tag">{{ w.submitted_by.name|default:"—" }}</span></li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="empty">No weapons yet.</p>{% endif %}
+    </div>
+    <div class="card">
+        <h2>📍 Locations ({{ locations|length }})</h2>
+        {% if locations %}
+        <ul class="plain">
+            {% for l in locations %}
+            <li><span>{{ l.text }}</span><span class="tag">{{ l.submitted_by.name|default:"—" }}</span></li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="empty">No locations yet.</p>{% endif %}
+    </div>
+</div>

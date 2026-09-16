@@ -1,0 +1,24 @@
+{% if waiting_on %}
+<p class="muted">Your kill is in progress. Waiting for confirmation.</p>
+{% else %}
+<div class="row" x-data>
+    <form method="post" action="{% url 'game:attempt_new' trip.code %}">
+        {% csrf_token %}
+        <input type="hidden" name="counterpart" value="{{ assignment.target.pk }}">
+        <button class="btn btn-primary" type="submit">I made the kill</button>
+    </form>
+    <button class="btn" type="button" @click="$refs.confirmDeath.showModal()">I got killed</button>
+    <dialog x-ref="confirmDeath" class="confirm-modal">
+        <span class="eyebrow">CONFIRM</span>
+        <h2>Are you sure?</h2>
+        <p class="muted">This marks you as out of the hunt and can't be undone.</p>
+        <div class="row">
+            <form method="post" action="{% url 'game:report_death' trip.code %}">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit">Yes, I'm out</button>
+            </form>
+            <button class="btn" type="button" @click="$refs.confirmDeath.close()">Cancel</button>
+        </div>
+    </dialog>
+</div>
+{% endif %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}How to play · {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-heading"><span class="eyebrow">{{ trip.name }}</span><h1>How to play</h1><p class="muted">Simple. Sneaky. Last one standing wins.</p></div>
+
+<div class="card">
+    <h2>The goal</h2>
+    <p>Be the last player left alive. Your job is to get your target to accept a specific weapon from you at a specific place.</p>
+    <p class="muted">Example: your weapon is a <em>ketchup bottle</em> and your place is <em>the pool</em>. Hand it to your target at the pool, get them to take it, and you've made your kill.</p>
+</div>
+
+<div class="card">
+    <h2>How it works</h2>
+    <ol class="rules">
+        <li>
+            <h3>Everyone adds ideas</h3>
+            <p>Before the game starts, everyone adds weapon and location ideas to the pool.</p>
+        </li>
+        <li>
+            <h3>The hunt begins</h3>
+            <p>With at least 3 players and enough weapons and locations, the organiser starts the game.</p>
+        </li>
+        <li>
+            <h3>You get a secret contract</h3>
+            <p>You're given a target, a weapon, and a location. You won't get your own ideas, and only you know who you're after.</p>
+        </li>
+        <li>
+            <h3>Make your kill</h3>
+            <p>Get your target to accept your weapon at your location. It only counts if it's the exact weapon at the exact place.</p>
+        </li>
+        <li>
+            <h3>Record it</h3>
+            <p>When it happens, report the kill on the game page and your target confirms or denies it. If you're the one who got killed, tap “I got killed” and confirm — it's taken at face value, with no confirmation needed from the other player.</p>
+        </li>
+        <li>
+            <h3>Take over the contract</h3>
+            <p>Once a kill is confirmed, your target is out, and you inherit their contract: their target, their weapon, their place. Keep going.</p>
+        </li>
+    </ol>
+</div>
+
+<div class="card">
+    <h2>Good to know</h2>
+    <ul class="fine">
+        <li>You can only kill your current target, and only with your exact weapon and place.</li>
+        <li>If a kill is denied, nothing happens.</li>
+        <li>Being out is permanent.</li>
+        <li>Reporting your own death is taken at face value — honesty is assumed.</li>
+    </ul>
+</div>
+
+<div class="row">
+    <a class="btn" href="{% url 'game:game' trip.code %}">Back to the game</a>
+</div>
+{% endblock %}

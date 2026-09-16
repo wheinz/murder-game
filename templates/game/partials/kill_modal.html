@@ -1,0 +1,22 @@
+{% if must_resolve %}
+<dialog class="kill-modal" x-data x-init="$el.showModal()" @cancel.prevent>
+    {% for attempt in must_resolve %}
+    <span class="eyebrow">A KILL NEEDS YOUR CALL</span>
+    <h2>Are you dead?</h2>
+    <p class="muted">
+        <strong>{{ attempt.killer.name }}</strong> claims to have killed you with
+        <em>{{ attempt.weapon_text }}</em> at <em>{{ attempt.location_text }}</em>.
+    </p>
+    <div class="row">
+        <form method="post" action="{% url 'game:attempt_resolve' trip.code attempt.pk 'confirm' %}">
+            {% csrf_token %}
+            <button class="btn btn-primary" type="submit">Yes, I'm dead</button>
+        </form>
+        <form method="post" action="{% url 'game:attempt_resolve' trip.code attempt.pk 'deny' %}">
+            {% csrf_token %}
+            <button class="btn" type="submit">No, I'm alive</button>
+        </form>
+    </div>
+    {% endfor %}
+</dialog>
+{% endif %}

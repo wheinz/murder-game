@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Weapons and locations · {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Weapons and locations</h1>
+    <p class="muted">Add everyday objects and places around you. When the hunt starts, each player gets a weapon and a location.</p>
+    <div class="grid two">
+        <form hx-post="{% url 'game:pool' trip.code %}" hx-target="#pool-lists" hx-swap="innerHTML"
+              hx-on::after-request="this.reset()" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="weapon">
+            <div class="field">
+                <label for="weapon_text">Add a weapon</label>
+                <input type="text" id="weapon_text" name="text" placeholder="Ketchup bottle" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Add weapon</button>
+        </form>
+        <form hx-post="{% url 'game:pool' trip.code %}" hx-target="#pool-lists" hx-swap="innerHTML"
+              hx-on::after-request="this.reset()" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="kind" value="location">
+            <div class="field">
+                <label for="location_text">Add a location</label>
+                <input type="text" id="location_text" name="text" placeholder="Swimming pool" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Add location</button>
+        </form>
+    </div>
+</div>
+
+<div id="pool-lists">
+    {% include 'game/partials/pool_lists.html' %}
+</div>
+
+<div class="row">
+    <a class="btn" href="{% url 'game:game' trip.code %}">Back to game</a>
+</div>
+{% endblock %}
