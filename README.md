@@ -12,7 +12,7 @@ roster, and the standings), **Feed** (every kill and announcement), and **Photos
 
 - Python 3.13 + [uv](https://docs.astral.sh/uv/), Django 6
 - HTMX + Alpine.js (CDN), plain CSS (`static/css/app.css`)
-- SQLite (WAL mode), WhiteNoise for static files
+- SQLite (WAL mode), WhiteNoise for static files, Caddy for uploaded media
 - Docker Compose + Caddy for production
 
 ## How the game works

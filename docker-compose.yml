@@ -34,6 +34,18 @@ services:
     networks:
       - app
 
+  # Serves user-uploaded photos. Only reachable from the edge proxy; kept
+  # separate so Gunicorn never handles media requests.
+  media:
+    image: caddy:2
+    restart: unless-stopped
+    command: run --config /etc/caddy/Caddyfile.media --adapter caddyfile
+    volumes:
+      - ./Caddyfile.media:/etc/caddy/Caddyfile.media:ro
+      - ./data/media:/srv/media:ro
+    networks:
+      - app
+
 volumes:
   caddy_data:
   caddy_config:
