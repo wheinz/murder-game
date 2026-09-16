@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Feed · {{ trip.name }}{% endblock %}
+
+{% block content %}
+<div class="page-heading"><span class="eyebrow">{{ trip.name }}</span><h1>Feed</h1><p class="muted">Every kill and announcement, all in one place.</p></div>
+
+<div class="card">
+    <div id="feed-list" hx-get="{% url 'feed:list_partial' trip.code %}" hx-trigger="every 5s" hx-swap="innerHTML">
+        {% include 'feed/partials/list.html' %}
+    </div>
+</div>
+{% endblock %}

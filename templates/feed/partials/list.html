@@ -1,0 +1,17 @@
+{% if posts %}
+<ul class="feed-list">
+    {% for post in posts %}
+    <li class="feed-item{% if post.is_pinned %} pinned{% endif %}">
+        <div class="feed-body">{{ post.body }}</div>
+        <div class="feed-meta">
+            {% if post.author %}{{ post.author.name }}{% else %}Murder Game{% endif %}
+            · {{ post.created_at|date:"D H:i" }}
+            {% if post.is_pinned %}· 📌 pinned{% endif %}
+            {% if post.kind == 'announcement' %}· announcement{% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="empty">Nothing here yet.</p>
+{% endif %}
