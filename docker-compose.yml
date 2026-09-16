@@ -39,7 +39,7 @@ services:
   media:
     image: caddy:2
     restart: unless-stopped
-    command: run --config /etc/caddy/Caddyfile.media --adapter caddyfile
+    command: caddy run --config /etc/caddy/Caddyfile.media --adapter caddyfile
     volumes:
       - ./Caddyfile.media:/etc/caddy/Caddyfile.media:ro
       - ./data/media:/srv/media:ro
