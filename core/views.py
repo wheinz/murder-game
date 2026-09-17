@@ -1,10 +1,17 @@
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from feed.models import Post
 
-from .auth import get_current_player, get_trip, set_current_player
+from .auth import (
+    get_current_player,
+    get_trip,
+    set_current_player,
+    start_impersonation,
+    stop_impersonation,
+)
 from .models import Player, Trip
 
 
@@ -49,3 +56,18 @@ def join(request, code):
             return redirect("game:game", code=trip.code)
 
     return render(request, "core/join.html", {"trip": trip})
+
+
+@staff_member_required
+def impersonate(request, player_id):
+    player = get_object_or_404(Player, pk=player_id)
+    start_impersonation(request, player)
+    messages.info(request, f"Now viewing as {player.name}.")
+    return redirect("game:game", code=player.trip.code)
+
+
+@staff_member_required
+def stop_impersonating(request):
+    stop_impersonation(request)
+    messages.info(request, "Stopped viewing as player.")
+    return redirect("admin:index")

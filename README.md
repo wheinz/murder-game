@@ -134,7 +134,13 @@ rm -rf data caddy_data caddy_config   # optional: nuke the database and photos
   duplicate nicknames are rejected, so a lost session (cleared cookies/new browser) means
   the organiser has to remove that player in the Django admin before they can rejoin.
   Anyone who knows the 6-digit code can join. There is no attempt throttling (by choice),
-  so it is fine for a friends' weekend, not for anything sensitive.
+   so it is fine for a friends' weekend, not for anything sensitive.
+- Staff can inspect any player's view without joining as them. In the Django admin
+  (`/admin/core/player/`) each row has a **Log in as** button; clicking it makes your
+  browser browse the app as that player, with an amber banner and an **Exit** link to
+  return to the admin. It is staff-only, never touches the player's own session, and is
+  purely for testing (no extra account needed). Only the impersonating browser's session
+  is affected — the player's phone stays signed in.
 - The game lives at `/t/<code>/`. Everything administrative lives in the Django admin:
   creating games, starting/resetting/ending the hunt, editing the pool, posting/pinning
   feed announcements, and deleting photos. Kill reports can also be confirmed or denied

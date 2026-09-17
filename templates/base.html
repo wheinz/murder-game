@@ -13,6 +13,14 @@
 </head>
 <body class="{% if current_player %}signed-in{% else %}welcome{% endif %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 <a class="skip-link" href="#main-content">Skip to content</a>
+{% if impersonating %}
+<div class="impersonation-banner" role="status">
+    <div class="container">
+        <span>Viewing as <strong>{{ current_player.name }}</strong> (admin)</span>
+        <a href="{% url 'core:stop_impersonate' %}">Exit</a>
+    </div>
+</div>
+{% endif %}
 <header class="site-header">
     <div class="container header-inner">
         <a class="brand" href="{% if current_player %}{% url 'game:game' current_player.trip.code %}{% else %}{% url 'core:home' %}{% endif %}">

@@ -375,6 +375,12 @@ dialog::backdrop { background: #080b08cc; backdrop-filter: blur(4px); }
     font-weight: 700;
 }
 
+/* Admin impersonation banner */
+.impersonation-banner { background: #382e1e; border-bottom: 1px solid #75603a; }
+.impersonation-banner .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 10px; font-size: .82rem; }
+.impersonation-banner strong { color: var(--amber); }
+.impersonation-banner a { color: var(--amber); font-weight: 700; white-space: nowrap; }
+
 /* Kill confirmation + confirm modals */
 .kill-modal,
 .confirm-modal {

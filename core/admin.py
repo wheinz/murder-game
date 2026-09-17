@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.urls import reverse
+from django.utils.html import format_html
 
 from game import engine
 
@@ -60,7 +62,12 @@ class TripAdmin(admin.ModelAdmin):
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "trip", "is_alive", "joined_at")
+    list_display = ("name", "trip", "is_alive", "login_as", "joined_at")
     list_filter = ("is_alive", "trip")
     list_editable = ("is_alive",)
     search_fields = ("name",)
+
+    @admin.display(description="")
+    def login_as(self, obj):
+        url = reverse("core:impersonate", args=[obj.pk])
+        return format_html('<a class="button" href="{}">Log in as</a>', url)
