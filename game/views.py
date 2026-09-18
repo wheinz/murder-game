@@ -68,8 +68,12 @@ def _pool_context(request, error=None):
     return {
         "trip": trip,
         "error": error,
-        "weapons": trip.weapons.filter(is_active=True).select_related("submitted_by"),
-        "locations": trip.locations.filter(is_active=True).select_related("submitted_by"),
+        "weapons": trip.weapons.filter(
+            is_active=True, submitted_by=request.current_player
+        ),
+        "locations": trip.locations.filter(
+            is_active=True, submitted_by=request.current_player
+        ),
     }
 
 

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="card">
     <h1>Weapons and locations</h1>
-    <p class="muted">Add everyday objects and places around you. When the hunt starts, each player gets a weapon and a location.</p>
+    <p class="muted">Add everyday objects and places around you. Only you can see what you add — the organiser sees everyone's list. When the hunt starts, each player gets a weapon and a location.</p>
     <div class="grid two">
         <form hx-post="{% url 'game:pool' trip.code %}" hx-target="#pool-lists" hx-swap="innerHTML"
               hx-on::after-request="this.reset()" class="inline-form">

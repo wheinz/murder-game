@@ -83,6 +83,37 @@ def test_duplicate_pool_submission_shows_inline_error(client, trip, players, log
     assert trip.weapons.filter(text="Ketchup bottle").count() == 1
 
 
+def test_pool_page_only_shows_own_submissions(client, trip, players, login_as):
+    Weapon.objects.create(trip=trip, text="Alice bat", submitted_by=players[0])
+    Weapon.objects.create(trip=trip, text="Bob knife", submitted_by=players[1])
+    Location.objects.create(trip=trip, text="Alice attic", submitted_by=players[0])
+    Location.objects.create(trip=trip, text="Bob cellar", submitted_by=players[1])
+
+    login_as(client, players[0])
+    response = client.get(reverse("game:pool", args=[trip.code]))
+    assert response.status_code == 200
+    assert b"Alice bat" in response.content
+    assert b"Alice attic" in response.content
+    assert b"Bob knife" not in response.content
+    assert b"Bob cellar" not in response.content
+
+
+def test_pool_partial_only_shows_own_submissions(client, trip, players, login_as):
+    Weapon.objects.create(trip=trip, text="Alice bat", submitted_by=players[0])
+    Weapon.objects.create(trip=trip, text="Bob knife", submitted_by=players[1])
+
+    login_as(client, players[0])
+    response = client.post(
+        reverse("game:pool", args=[trip.code]),
+        {"text": "Alice rope", "kind": "weapon"},
+        HTTP_HX_REQUEST="true",
+    )
+    assert response.status_code == 200
+    assert b"Alice bat" in response.content
+    assert b"Alice rope" in response.content
+    assert b"Bob knife" not in response.content
+
+
 def confirm_kill(started):
     killer = started.players.get(name="Alice")
     victim = Player.objects.get(pk=killer.active_assignment.target_id)
