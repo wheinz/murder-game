@@ -12,6 +12,11 @@ def generate_code():
             return code
 
 
+def generate_pin():
+    """A 4-digit numeric player code, used to reclaim a session."""
+    return f"{secrets.randbelow(10_000):04d}"
+
+
 class Trip(models.Model):
     class GameStatus(models.TextChoices):
         SETUP = "setup", "Setup"
@@ -59,6 +64,7 @@ class Trip(models.Model):
 class Player(models.Model):
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="players")
     name = models.CharField(max_length=80)
+    pin = models.CharField(max_length=4, editable=False, default=generate_pin)
     is_alive = models.BooleanField(default=True)
     joined_at = models.DateTimeField(default=timezone.now)
 

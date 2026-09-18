@@ -8,6 +8,7 @@
 
     <form method="post" class="stack" autocomplete="off">
         {% csrf_token %}
+        <input type="hidden" name="action" value="join">
         <div class="field">
             <label for="name">Pick a nickname</label>
             <input type="text" id="name" name="name" maxlength="80" required
@@ -17,5 +18,25 @@
     </form>
     <p class="small muted" style="margin-top:16px">Pick a nickname no one else in this game is using.</p>
     <p class="small muted" style="margin-top:8px">New here? <a href="{% url 'game:rules' trip.code %}">Read the rules</a>.</p>
+
+    <hr>
+    <h2>Already playing?</h2>
+    <p class="muted">Lost your session? Enter your nickname and the 4-digit player code shown on your game page.</p>
+    <form method="post" class="stack" autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="rejoin">
+        <div class="field">
+            <label for="rejoin-name">Nickname</label>
+            <input type="text" id="rejoin-name" name="name" maxlength="80" required
+                   placeholder="Your nickname">
+        </div>
+        <div class="field">
+            <label for="rejoin-pin">Player code</label>
+            <input type="text" id="rejoin-pin" name="pin" inputmode="numeric"
+                   pattern="[0-9]*" maxlength="4" required placeholder="0000"
+                   style="letter-spacing:0.4em;text-align:center">
+        </div>
+        <button class="btn" type="submit">Get back in</button>
+    </form>
 </div>
 {% endblock %}

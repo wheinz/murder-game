@@ -10,6 +10,12 @@
 
 {% include 'game/partials/kill_modal.html' %}
 
+<div class="card player-code">
+    <span class="eyebrow">YOUR PLAYER CODE</span>
+    <p><strong style="font-size:1.6rem;letter-spacing:0.3em">{{ player.pin }}</strong></p>
+    <p class="small muted">Save this code. If you lose your session, use your nickname and this code to get back in on the join page.</p>
+</div>
+
 {% if trip.game_status == 'setup' %}
 <div class="card">
     <h2>Get ready</h2>

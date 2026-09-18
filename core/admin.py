@@ -10,8 +10,8 @@ from .models import Player, Trip
 class PlayerInline(admin.TabularInline):
     model = Player
     extra = 0
-    fields = ("name", "is_alive", "joined_at")
-    readonly_fields = ("joined_at",)
+    fields = ("name", "pin", "is_alive", "joined_at")
+    readonly_fields = ("pin", "joined_at")
 
 
 @admin.register(Trip)
@@ -62,10 +62,11 @@ class TripAdmin(admin.ModelAdmin):
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("name", "trip", "is_alive", "login_as", "joined_at")
+    list_display = ("name", "pin", "trip", "is_alive", "login_as", "joined_at")
     list_filter = ("is_alive", "trip")
     list_editable = ("is_alive",)
-    search_fields = ("name",)
+    search_fields = ("name", "pin")
+    readonly_fields = ("pin",)
 
     @admin.display(description="")
     def login_as(self, obj):

@@ -43,7 +43,23 @@ def join(request, code):
 
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
-        if not name:
+        if request.POST.get("action") == "rejoin":
+            pin = request.POST.get("pin", "").strip()
+            if not name:
+                messages.error(request, "Enter your nickname first.")
+            elif not (len(pin) == 4 and pin.isdigit()):
+                messages.error(request, "Enter your 4-digit player code.")
+            else:
+                player = trip.players.filter(name__iexact=name, pin=pin).first()
+                if player is None:
+                    messages.error(
+                        request, "That nickname and player code don't match anyone here."
+                    )
+                else:
+                    set_current_player(request, player)
+                    messages.success(request, f"Welcome back, {player.name}.")
+                    return redirect("game:game", code=trip.code)
+        elif not name:
             messages.error(request, "Enter a nickname first.")
         elif len(name) > 80:
             messages.error(request, "That nickname is too long (80 characters max).")
