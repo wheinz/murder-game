@@ -3,7 +3,8 @@
 An assassin-style party game for a weekend away: everyone gets a target, a weapon, and a
 location, and you "kill" your target by getting them to accept your weapon at your
 location (e.g. a ketchup bottle at the pool). Once a kill is confirmed you inherit your
-victim's contract — their target, their weapon, their place. Last one standing wins.
+victim's contract — their target and their weapons and locations. The organiser can also
+hand out bonus weapons and locations during the hunt. Last one standing wins.
 
 Everything is fictional. The app has just three tabs: **Game** (your contract, the
 roster, and the standings), **Feed** (every kill and announcement), and **Photos**.
@@ -28,6 +29,9 @@ roster, and the standings), **Feed** (every kill and announcement), and **Photos
    shows the exact contract being claimed ("did they hand you X at Y?").
 6. On confirmation the victim is out and the killer takes over the victim's contract.
    If that leaves a single player, the game ends and the winner is shown.
+7. At any time during an active hunt you can use the "Grant bonus weapon & location"
+   admin action to give every active contract an extra weapon/location pair. It is
+   repeatable and the pairs transfer along with the contract on a kill.
 
 Players can read a plain-language version in the app at `/t/<code>/rules/`, linked from
 the game page and the join screen.

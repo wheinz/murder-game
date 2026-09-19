@@ -66,6 +66,18 @@
     <p><span class="muted">Target</span><br><span class="weapon">{{ assignment.target.name }}</span></p>
     <p><span class="muted">Weapon</span><br><span class="weapon">{{ assignment.weapon_text }}</span></p>
     <p><span class="muted">Location</span><br><span class="place">{{ assignment.location_text }}</span></p>
+    {% with loadouts=assignment.loadouts.all %}
+    {% if loadouts %}
+    <div class="bonus-loadouts">
+        <span class="muted">Bonus weapons &amp; locations</span>
+        <ul class="plain">
+            {% for loadout in loadouts %}
+            <li><span>{{ loadout.weapon_text }}</span><span class="place">{{ loadout.location_text }}</span></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% endwith %}
     {% include 'game/partials/contract_actions.html' %}
 </div>
 {% elif player.is_alive %}

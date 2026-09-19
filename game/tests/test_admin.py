@@ -62,6 +62,34 @@ def test_admin_confirm_action_inherits_contract(admin_client, started):
     assert Kill.objects.filter(trip=started, killer=killer, victim=victim).exists()
 
 
+def run_trip_action(client, trip, action):
+    return client.post(
+        reverse("admin:core_trip_changelist"),
+        {
+            "action": action,
+            "select_across": "0",
+            "index": "0",
+            "_selected_action": [str(trip.pk)],
+        },
+    )
+
+
+def test_admin_grant_bonus_action(admin_client, started):
+    response = run_trip_action(admin_client, started, "grant_bonus")
+    assert response.status_code == 302
+
+    active = started.assignments.filter(is_active=True)
+    assert active.exists()
+    for assignment in active:
+        assert assignment.loadouts.count() == 1
+
+
+def test_admin_grant_bonus_reports_error_for_setup_game(admin_client, trip):
+    response = run_trip_action(admin_client, trip, "grant_bonus")
+    assert response.status_code == 302
+    assert not trip.assignments.exists()
+
+
 def test_admin_deny_action_leaves_game_unchanged(admin_client, started):
     attempt = make_attempt(started)
     killer = attempt.killer

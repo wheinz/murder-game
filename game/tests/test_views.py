@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from core.models import Player
 from game import engine
-from game.models import Kill, KillAttempt, Location, Weapon
+from game.models import Kill, KillAttempt, Loadout, Location, Weapon
 
 
 @pytest.fixture
@@ -137,6 +137,21 @@ def test_game_shows_my_kills(client, started, login_as):
     response = client.get(reverse("game:game", args=[started.code]))
     assert b"Your kills (1)" in response.content
     assert b"You're out" not in response.content
+
+
+def test_game_shows_bonus_loadouts(client, started, login_as):
+    player = started.players.get(name="Alice")
+    assignment = player.active_assignment
+    Loadout.objects.create(
+        assignment=assignment,
+        weapon_text="Bonus banana",
+        location_text="Bonus barn",
+    )
+
+    login_as(client, player)
+    response = client.get(reverse("game:game", args=[started.code]))
+    assert b"Bonus banana" in response.content
+    assert b"Bonus barn" in response.content
 
 
 def test_game_players_dashboard_splits_alive_and_out(client, started, login_as):

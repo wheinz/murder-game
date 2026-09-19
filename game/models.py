@@ -74,6 +74,23 @@ class Assignment(models.Model):
         self.save(update_fields=["is_active", "ended_at"])
 
 
+class Loadout(models.Model):
+    """An extra weapon/location pair granted to a contract as a bonus."""
+
+    assignment = models.ForeignKey(
+        Assignment, on_delete=models.CASCADE, related_name="loadouts"
+    )
+    weapon_text = models.CharField(max_length=120)
+    location_text = models.CharField(max_length=120)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"{self.weapon_text} at {self.location_text}"
+
+
 class KillAttempt(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"

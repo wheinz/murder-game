@@ -27,7 +27,7 @@ class TripAdmin(admin.ModelAdmin):
     list_filter = ("game_status",)
     search_fields = ("name", "code")
     inlines = [PlayerInline]
-    actions = ("start_game", "reset_game", "end_game")
+    actions = ("start_game", "grant_bonus", "reset_game", "end_game")
     fieldsets = (
         (None, {"fields": ("name", "code", "game_status")}),
         ("Dates", {"fields": ("starts_on", "ends_on")}),
@@ -46,6 +46,16 @@ class TripAdmin(admin.ModelAdmin):
                 self.message_user(request, f"{trip.name}: {exc}", messages.ERROR)
             else:
                 self.message_user(request, f"{trip.name}: hunt started.", messages.SUCCESS)
+
+    @admin.action(description="Grant bonus weapon & location")
+    def grant_bonus(self, request, queryset):
+        for trip in queryset:
+            try:
+                engine.grant_bonus(trip)
+            except engine.GameError as exc:
+                self.message_user(request, f"{trip.name}: {exc}", messages.ERROR)
+            else:
+                self.message_user(request, f"{trip.name}: bonus granted.", messages.SUCCESS)
 
     @admin.action(description="Reset the game to setup")
     def reset_game(self, request, queryset):

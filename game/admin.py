@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 
 from . import engine
-from .models import Assignment, Kill, KillAttempt, Location, Weapon
+from .models import Assignment, Kill, KillAttempt, Loadout, Location, Weapon
 
 
 @admin.register(Weapon)
@@ -14,6 +14,13 @@ class LocationAdmin(admin.ModelAdmin):
     list_display = ("text", "trip", "submitted_by", "is_active")
 
 
+class LoadoutInline(admin.TabularInline):
+    model = Loadout
+    extra = 0
+    fields = ("weapon_text", "location_text", "created_at")
+    readonly_fields = ("created_at",)
+
+
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
     list_display = (
@@ -21,10 +28,22 @@ class AssignmentAdmin(admin.ModelAdmin):
         "target",
         "weapon_text",
         "location_text",
+        "bonus_count",
         "is_active",
         "game_number",
     )
     list_filter = ("is_active", "game_number")
+    inlines = [LoadoutInline]
+
+    @admin.display(description="bonuses")
+    def bonus_count(self, obj):
+        return obj.loadouts.count()
+
+
+@admin.register(Loadout)
+class LoadoutAdmin(admin.ModelAdmin):
+    list_display = ("assignment", "weapon_text", "location_text", "created_at")
+    search_fields = ("weapon_text", "location_text")
 
 
 @admin.register(KillAttempt)

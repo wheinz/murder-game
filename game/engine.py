@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from feed.models import Post
 
-from .models import Assignment, Kill, KillAttempt
+from .models import Assignment, Kill, KillAttempt, Loadout
 
 
 class GameError(Exception):
@@ -77,6 +77,38 @@ def start_game(trip):
 
     Post.system(trip, "The hunt has begun. Check your contract.")
     return True
+
+
+def _pick_item(items, player_id):
+    """Pick a pool item, preferring one the player did not submit."""
+    choices = [i for i in items if i.submitted_by_id != player_id] or items
+    return random.choice(choices)
+
+
+def grant_bonus(trip):
+    """Give every active contract an extra weapon/location pair. Repeatable."""
+    if trip.game_status != trip.GameStatus.ACTIVE:
+        raise GameError("Bonuses can only be granted while the hunt is active.")
+
+    assignments = list(trip.assignments.filter(is_active=True).select_related("killer"))
+    if not assignments:
+        raise GameError("There are no active contracts.")
+
+    weapons = list(trip.weapons.filter(is_active=True))
+    locations = list(trip.locations.filter(is_active=True))
+    if not weapons or not locations:
+        raise GameError("Add at least one weapon and one location first.")
+
+    with transaction.atomic():
+        for assignment in assignments:
+            Loadout.objects.create(
+                assignment=assignment,
+                weapon_text=_pick_item(weapons, assignment.killer_id).text,
+                location_text=_pick_item(locations, assignment.killer_id).text,
+            )
+
+    Post.system(trip, "Bonus! Every hunter gains an extra weapon and location.")
+    return len(assignments)
 
 
 def _killer_for(victim):
@@ -215,7 +247,7 @@ def resolve_attempt(attempt, resolver, confirmed):
             f"{attempt.victim.name} is down. {attempt.killer.name} wins the hunt!",
         )
     else:
-        Assignment.objects.create(
+        new_contract = Assignment.objects.create(
             trip=trip,
             killer=attempt.killer,
             target=next_target,
@@ -223,6 +255,12 @@ def resolve_attempt(attempt, resolver, confirmed):
             location_text=victim_contract.location_text,
             game_number=attempt.game_number,
         )
+        for loadout in victim_contract.loadouts.all():
+            Loadout.objects.create(
+                assignment=new_contract,
+                weapon_text=loadout.weapon_text,
+                location_text=loadout.location_text,
+            )
         Post.system(
             trip,
             f"{attempt.victim.name} is down. "

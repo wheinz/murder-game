@@ -1,6 +1,7 @@
 import pytest
 
 from core.models import Player
+from feed.models import Post
 from game import engine
 from game.engine import GameError
 from game.models import Assignment, Kill, KillAttempt, Location, Weapon
@@ -78,6 +79,65 @@ def test_kill_transfers_victim_contract(trip, players):
     assert new_contract.target_id == cara.pk
     assert new_contract.weapon_text == "weapon-1"
     assert new_contract.location_text == "place-1"
+
+
+def test_grant_bonus_adds_pair_to_every_contract(trip, players):
+    add_pool(trip, len(players))
+    engine.start_game(trip)
+
+    granted = engine.grant_bonus(trip)
+
+    assert granted == len(players)
+    for assignment in trip.assignments.filter(is_active=True):
+        assert assignment.loadouts.count() == 1
+    assert Post.objects.filter(trip=trip, body__icontains="bonus").exists()
+
+
+def test_grant_bonus_stacks_on_repeat(trip, players):
+    add_pool(trip, len(players))
+    engine.start_game(trip)
+
+    engine.grant_bonus(trip)
+    engine.grant_bonus(trip)
+
+    for assignment in trip.assignments.filter(is_active=True):
+        assert assignment.loadouts.count() == 2
+
+
+def test_grant_bonus_requires_active_hunt(trip, players):
+    add_pool(trip, len(players))
+    with pytest.raises(GameError):
+        engine.grant_bonus(trip)
+
+
+def test_grant_bonus_requires_pool_items(trip, players):
+    add_pool(trip, len(players))
+    engine.start_game(trip)
+    trip.weapons.update(is_active=False)
+
+    with pytest.raises(GameError):
+        engine.grant_bonus(trip)
+
+
+def test_kill_inherits_victim_bonus_pairs(trip, players):
+    add_pool(trip, len(players))
+    build_chain(trip, players)  # alice -> bob -> cara -> dan -> alice
+    alice, bob, cara = players[0], players[1], players[2]
+    trip.game_status = trip.GameStatus.ACTIVE
+    trip.save(update_fields=["game_status"])
+    engine.grant_bonus(trip)
+
+    bob_contract = bob.assignments_given.get(is_active=True)
+    bob_pairs = list(bob_contract.loadouts.values_list("weapon_text", "location_text"))
+    assert bob_pairs
+
+    attempt = engine.create_attempt(trip, alice, bob)
+    engine.resolve_attempt(attempt, bob, confirmed=True)
+
+    new_contract = alice.assignments_given.get(is_active=True)
+    assert new_contract.target_id == cara.pk
+    new_pairs = list(new_contract.loadouts.values_list("weapon_text", "location_text"))
+    assert new_pairs == bob_pairs
 
 
 def test_last_standing_wins(trip, players):
