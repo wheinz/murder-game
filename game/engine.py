@@ -13,22 +13,10 @@ class GameError(Exception):
 
 
 def _assign_items(players, items):
-    """Hand each player one item, avoiding their own submission where possible."""
+    """Hand each player one item from the pool, without replacement."""
     remaining = list(items)
     random.shuffle(remaining)
-    result = {}
-    ordered = sorted(
-        players,
-        key=lambda p: sum(1 for i in remaining if i.submitted_by_id != p.pk),
-    )
-    for player in ordered:
-        choices = [i for i in remaining if i.submitted_by_id != player.pk]
-        if not choices:
-            choices = remaining
-        chosen = random.choice(choices)
-        remaining.remove(chosen)
-        result[player.pk] = chosen.text
-    return result
+    return {player.pk: remaining[i].text for i, player in enumerate(players)}
 
 
 def start_game(trip):
@@ -79,12 +67,6 @@ def start_game(trip):
     return True
 
 
-def _pick_item(items, player_id):
-    """Pick a pool item, preferring one the player did not submit."""
-    choices = [i for i in items if i.submitted_by_id != player_id] or items
-    return random.choice(choices)
-
-
 def grant_bonus(trip):
     """Give every active contract an extra weapon/location pair. Repeatable."""
     if trip.game_status != trip.GameStatus.ACTIVE:
@@ -103,8 +85,8 @@ def grant_bonus(trip):
         for assignment in assignments:
             Loadout.objects.create(
                 assignment=assignment,
-                weapon_text=_pick_item(weapons, assignment.killer_id).text,
-                location_text=_pick_item(locations, assignment.killer_id).text,
+                weapon_text=random.choice(weapons).text,
+                location_text=random.choice(locations).text,
             )
 
     Post.system(trip, "Bonus! Every hunter gains an extra weapon and location.")

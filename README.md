@@ -23,8 +23,7 @@ roster, and the standings), **Feed** (every kill and announcement), and **Photos
 2. Friends open the site, enter the code, and pick a nickname (unique within the game).
 3. Everyone submits weapons and locations to a shared pool.
 4. You start the hunt from the Django admin. The app shuffles players into one circular
-   chain and deals each player a target, a weapon, and a location (avoiding your own
-   submissions).
+   chain and deals each player a target, a weapon, and a location.
 5. A kill can be opened by either side. The other party confirms or denies it. Confirming
    shows the exact contract being claimed ("did they hand you X at Y?").
 6. On confirmation the victim is out and the killer takes over the victim's contract.
