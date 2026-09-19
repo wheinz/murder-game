@@ -126,6 +126,13 @@ MAILERS = {
 }
 
 
+# Sessions: keep players signed in across the weekend and across www/apex.
+SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE") or 60 * 60 * 24 * 90)
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN") or None
+CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
+
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)

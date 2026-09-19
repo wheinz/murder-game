@@ -131,13 +131,16 @@ rm -rf data caddy_data caddy_config   # optional: nuke the database and photos
 
 ## Notes and tradeoffs
 
-- Identity is a signed session cookie set when you enter the code and pick a nickname.
+- Identity is a session cookie set when you enter the code and pick a nickname.
   Returning to `/` sends you straight back to your game, so players do not need to
-  remember the code. A nickname is permanent once chosen — there is no in-app switch — and
-  duplicate nicknames are rejected, so a lost session (cleared cookies/new browser) means
-  the organiser has to remove that player in the Django admin before they can rejoin.
-  Anyone who knows the 6-digit code can join. There is no attempt throttling (by choice),
-   so it is fine for a friends' weekend, not for anything sensitive.
+  remember the code. Sessions last 90 days and are refreshed on every request
+  (`SESSION_COOKIE_AGE` / `SESSION_SAVE_EVERY_REQUEST`), and `SESSION_COOKIE_DOMAIN`
+  can share one session across `www` and the apex. If a session is still lost (cleared
+  cookies, a new browser, or an in-app browser with its own cookie jar), the player
+  rejoins from the join screen with their nickname and the 4-digit player code shown on
+  their game page. Anyone who knows the 6-digit code can join. There is no attempt
+  throttling (by choice), so it is fine for a friends' weekend, not for anything
+  sensitive.
 - Staff can inspect any player's view without joining as them. In the Django admin
   (`/admin/core/player/`) each row has a **Log in as** button; clicking it makes your
   browser browse the app as that player, with an amber banner and an **Exit** link to

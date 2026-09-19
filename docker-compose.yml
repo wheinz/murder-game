@@ -9,6 +9,8 @@ services:
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:?set CSRF_TRUSTED_ORIGINS in .env}
       DATABASE_PATH: /data/db.sqlite3
       MEDIA_ROOT: /data/media
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-}
+      SESSION_COOKIE_AGE: ${SESSION_COOKIE_AGE:-}
     volumes:
       - ./data:/data
     expose:
