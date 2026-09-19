@@ -64,19 +64,21 @@
 <div class="card contract">
     <h2>Your contract</h2>
     <p><span class="muted">Target</span><br><span class="weapon">{{ assignment.target.name }}</span></p>
-    <p><span class="muted">Weapon</span><br><span class="weapon">{{ assignment.weapon_text }}</span></p>
-    <p><span class="muted">Location</span><br><span class="place">{{ assignment.location_text }}</span></p>
     {% with loadouts=assignment.loadouts.all %}
-    {% if loadouts %}
-    <div class="bonus-loadouts">
-        <span class="muted">Bonus weapons &amp; locations</span>
-        <ul class="plain">
-            {% for loadout in loadouts %}
-            <li><span>{{ loadout.weapon_text }}</span><span class="place">{{ loadout.location_text }}</span></li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+    <p><span class="muted">Weapons</span></p>
+    <ul class="plain">
+        <li><span class="weapon">{{ assignment.weapon_text }}</span></li>
+        {% for loadout in loadouts %}
+        <li><span class="weapon">{{ loadout.weapon_text }}</span></li>
+        {% endfor %}
+    </ul>
+    <p><span class="muted">Locations</span></p>
+    <ul class="plain">
+        <li><span class="place">{{ assignment.location_text }}</span></li>
+        {% for loadout in loadouts %}
+        <li><span class="place">{{ loadout.location_text }}</span></li>
+        {% endfor %}
+    </ul>
     {% endwith %}
     {% include 'game/partials/contract_actions.html' %}
 </div>
