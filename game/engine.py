@@ -269,6 +269,97 @@ def _cancel_stale_attempts(trip, exclude=None):
             attempt.save(update_fields=["status", "resolved_at"])
 
 
+def round_start(trip):
+    """When the current round's contracts were first dealt."""
+    start = (
+        trip.assignments.filter(game_number=trip.game_number)
+        .order_by("created_at")
+        .values_list("created_at", flat=True)
+        .first()
+    )
+    return start or timezone.now()
+
+
+def _elapsed_display(times, start):
+    if not times:
+        return None
+    seconds = max(0, (max(times) - start).total_seconds())
+    minutes = int(seconds // 60)
+    if minutes < 60:
+        return f"{minutes} min"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours} h {minutes} min"
+
+
+def final_standings(trip, kills=None):
+    """Ranked rows for a finished hunt: living by kills, then the dead.
+
+    Living players rank by kill count, then by who reached their last kill
+    soonest after the round began. Dead players follow, latest elimination first.
+    """
+    if kills is None:
+        kills = list(
+            Kill.objects.filter(trip=trip, game_number=trip.game_number).select_related(
+                "killer", "victim"
+            )
+        )
+    kills_by_victim = {kill.victim_id: kill for kill in kills}
+
+    kill_times = {}
+    for kill in kills:
+        kill_times.setdefault(kill.killer_id, []).append(kill.confirmed_at)
+
+    start = round_start(trip)
+
+    def living_key(player):
+        times = sorted(kill_times.get(player.pk, []))
+        elapsed = (times[-1] - start).total_seconds() if times else float("inf")
+        return (-len(times), elapsed, player.name)
+
+    living = sorted(trip.players.filter(is_alive=True), key=living_key)
+    winner_pk = living[0].pk if living else None
+
+    rows = [
+        {
+            "player": player,
+            "kills": len(kill_times.get(player.pk, [])),
+            "alive": True,
+            "kill": None,
+            "winner": player.pk == winner_pk,
+            "elapsed": _elapsed_display(kill_times.get(player.pk, []), start),
+        }
+        for player in living
+    ]
+
+    def death_order(player):
+        kill = kills_by_victim.get(player.pk)
+        return (kill is not None, kill.confirmed_at if kill else None)
+
+    dead = trip.players.filter(is_alive=False)
+    for player in sorted(dead, key=death_order, reverse=True):
+        rows.append(
+            {
+                "player": player,
+                "kills": len(kill_times.get(player.pk, [])),
+                "alive": False,
+                "kill": kills_by_victim.get(player.pk),
+                "winner": False,
+                "elapsed": None,
+            }
+        )
+    return rows
+
+
+def winner_of(trip):
+    """The winning player of a finished hunt, or None."""
+    if trip.game_status != trip.GameStatus.FINISHED:
+        return None
+    standings = final_standings(trip)
+    if standings and standings[0]["alive"]:
+        return standings[0]["player"]
+    return None
+
+
 def end_game(trip):
     """Finalize the hunt with whatever players are still alive (used by admins)."""
     now = timezone.now()
@@ -280,9 +371,9 @@ def end_game(trip):
         trip.game_status = trip.GameStatus.FINISHED
         trip.save(update_fields=["game_status"])
 
-    alive = list(trip.alive_players)
-    if len(alive) == 1:
-        Post.system(trip, f"The hunt is over. {alive[0].name} wins!")
+    winner = winner_of(trip)
+    if winner is not None:
+        Post.system(trip, f"The hunt is over. {winner.name} wins!")
     else:
         Post.system(trip, "The hunt was ended early.")
 

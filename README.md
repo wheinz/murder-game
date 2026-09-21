@@ -27,7 +27,9 @@ roster, and the standings), **Feed** (every kill and announcement), and **Photos
 5. A kill can be opened by either side. The other party confirms or denies it. Confirming
    shows the exact contract being claimed ("did they hand you X at Y?").
 6. On confirmation the victim is out and the killer takes over the victim's contract.
-   If that leaves a single player, the game ends and the winner is shown.
+   If that leaves a single player, the game ends and the winner is shown. The organiser
+   can also end the hunt early: the surviving player with the most kills wins, with the
+   fastest to reach that tally breaking a tie.
 7. At any time during an active hunt you can use the "Grant bonus weapon & location"
    admin action to give every active contract an extra weapon/location pair. It is
    repeatable and the pairs transfer along with the contract on a kill.

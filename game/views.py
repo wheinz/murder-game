@@ -29,11 +29,12 @@ def _game_context(request):
         kill = pair[1]
         return (kill is not None, kill.confirmed_at if kill else None)
 
-    winner = trip.winner
-    standings = []
-    if winner:
-        standings.append((winner, None))
-    standings += sorted(out_players, key=death_order, reverse=True)
+    if trip.game_status == trip.GameStatus.FINISHED:
+        standings = engine.final_standings(trip, kills=kills)
+        winner = next((row["player"] for row in standings if row["winner"]), None)
+    else:
+        standings = sorted(out_players, key=death_order, reverse=True)
+        winner = None
 
     return {
         "trip": trip,

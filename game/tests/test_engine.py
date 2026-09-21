@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from core.models import Player
 from feed.models import Post
@@ -158,6 +161,98 @@ def test_last_standing_wins(trip, players):
     assert trip.winner == alice
     assert trip.players.filter(is_alive=True).count() == 1
     assert Kill.objects.filter(trip=trip).count() == 3
+
+
+def record_kill(trip, killer, victim, when):
+    return Kill.objects.create(
+        trip=trip,
+        killer=killer,
+        victim=victim,
+        weapon_text="weapon",
+        location_text="place",
+        game_number=trip.game_number,
+        confirmed_at=when,
+    )
+
+
+def make_contract(trip, killer, target, created_at):
+    return Assignment.objects.create(
+        trip=trip,
+        killer=killer,
+        target=target,
+        weapon_text="weapon",
+        location_text="place",
+        created_at=created_at,
+    )
+
+
+def finish(trip):
+    trip.game_status = trip.GameStatus.FINISHED
+    trip.save(update_fields=["game_status"])
+
+
+def test_winner_has_most_kills_among_living(trip, players):
+    alice, bob, cara, dan = players
+    start = timezone.now() - timedelta(hours=1)
+    make_contract(trip, alice, bob, start)
+    for player in (bob, cara):
+        player.is_alive = False
+        player.save(update_fields=["is_alive"])
+    record_kill(trip, alice, bob, start + timedelta(minutes=5))
+    record_kill(trip, alice, cara, start + timedelta(minutes=20))
+    finish(trip)
+
+    standings = engine.final_standings(trip)
+    assert standings[0]["player"] == alice
+    assert standings[0]["winner"] is True
+    assert standings[0]["kills"] == 2
+    assert engine.winner_of(trip) == alice
+
+
+def test_winner_tiebreak_is_fastest_to_tally(trip, players):
+    alice, bob, cara, dan = players
+    start = timezone.now() - timedelta(hours=2)
+    make_contract(trip, alice, bob, start)
+    make_contract(trip, cara, dan, start)
+    for player in (bob, dan):
+        player.is_alive = False
+        player.save(update_fields=["is_alive"])
+    record_kill(trip, alice, bob, start + timedelta(minutes=10))
+    record_kill(trip, cara, dan, start + timedelta(minutes=50))
+    finish(trip)
+
+    standings = engine.final_standings(trip)
+    assert standings[0]["player"] == alice
+    assert standings[0]["winner"] is True
+    assert standings[1]["player"] == cara
+    assert [row["alive"] for row in standings] == [True, True, False, False]
+
+
+def test_last_survivor_wins_even_without_kills(trip, players):
+    alice, bob, cara, dan = players
+    start = timezone.now() - timedelta(hours=1)
+    make_contract(trip, alice, dan, start)
+    for player in (bob, cara, dan):
+        player.is_alive = False
+        player.save(update_fields=["is_alive"])
+    record_kill(trip, bob, cara, start + timedelta(minutes=5))
+    finish(trip)
+
+    assert engine.winner_of(trip) == alice
+    assert trip.winner == alice
+
+
+def test_end_game_announces_ranked_winner(trip, players):
+    add_pool(trip, len(players))
+    engine.start_game(trip)
+
+    engine.end_game(trip)
+
+    trip.refresh_from_db()
+    assert trip.game_status == trip.GameStatus.FINISHED
+    # Everyone is alive with no kills, so the tie-break falls to nickname order.
+    assert trip.winner == players[0]
+    assert Post.objects.filter(trip=trip, body__icontains="wins").exists()
 
 
 def test_report_death_resolves_immediately(trip, players):

@@ -137,6 +137,8 @@
     <p class="muted">You won the hunt. Well played.</p>
     {% elif killed_by %}
     <p class="muted">You were eliminated by <strong>{{ killed_by.killer.name }}</strong> with <em>{{ killed_by.weapon_text }}</em> at <em>{{ killed_by.location_text }}</em>.</p>
+    {% elif winner %}
+    <p class="muted">Most kills among the survivors takes it. Better luck next time.</p>
     {% else %}
     <p class="muted">Last one standing takes it all.</p>
     {% endif %}
@@ -144,12 +146,17 @@
 <div class="card">
     <h2>Final standings</h2>
     <ul class="plain standings">
-        {% for p, kill in standings %}
+        {% for row in standings %}
         <li>
-            <span><span class="rank">{{ forloop.counter }}</span> {{ p.name }}{% if p.pk == player.pk %} <span class="tag">you</span>{% endif %}
-                {% if kill %}<div class="small muted">eliminated by {{ kill.killer.name }}</div>{% endif %}
+            <span><span class="rank">{{ forloop.counter }}</span> {{ row.player.name }}{% if row.player.pk == player.pk %} <span class="tag">you</span>{% endif %}
+                {% if row.kill %}<div class="small muted">eliminated by {{ row.kill.killer.name }}</div>{% endif %}
             </span>
-            {% if winner and forloop.first %}<span class="badge finished">winner</span>{% else %}<span class="badge dead">out</span>{% endif %}
+            <span style="display:flex;gap:8px;align-items:center">
+                {% if row.kills %}<span class="tag">{{ row.kills }} kill{{ row.kills|pluralize }}{% if row.elapsed %} · {{ row.elapsed }}{% endif %}</span>{% endif %}
+                {% if row.winner %}<span class="badge finished">winner</span>
+                {% elif row.alive %}<span class="badge alive">alive</span>
+                {% else %}<span class="badge dead">out</span>{% endif %}
+            </span>
         </li>
         {% empty %}
         <li><span class="empty">No standings yet.</span></li>

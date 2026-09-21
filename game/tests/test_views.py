@@ -154,6 +154,18 @@ def test_game_shows_bonus_loadouts(client, started, login_as):
     assert b"Bonus barn" in response.content
 
 
+def test_finished_page_shows_ranked_winner(client, started, login_as):
+    killer, _ = confirm_kill(started)
+    engine.end_game(started)
+
+    login_as(client, killer)
+    response = client.get(reverse("game:game", args=[started.code]))
+    assert response.status_code == 200
+    assert f"{killer.name} wins".encode() in response.content
+    assert b"Final standings" in response.content
+    assert b"1 kill" in response.content
+
+
 def test_game_players_dashboard_splits_alive_and_out(client, started, login_as):
     killer, victim = confirm_kill(started)
     login_as(client, killer)

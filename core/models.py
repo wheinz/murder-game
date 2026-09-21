@@ -49,7 +49,9 @@ class Trip(models.Model):
     def winner(self):
         if self.game_status != self.GameStatus.FINISHED:
             return None
-        return self.players.filter(is_alive=True).first()
+        from game.engine import winner_of
+
+        return winner_of(self)
 
     def date_range_display(self):
         if self.starts_on and self.ends_on:
